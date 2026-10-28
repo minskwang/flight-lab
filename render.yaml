@@ -10,5 +10,5 @@ services:
         value: 24
       - key: SITE_PASSWORD
         generateValue: true
-      - key: TYPESAFE_API_KEY
+      - key: OPENAI_API_KEY
         sync: false
