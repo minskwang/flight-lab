@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: flight-lab
+    runtime: node
+    plan: free
+    buildCommand: node --version
+    startCommand: node server.mjs
+    envVars:
+      - key: NODE_VERSION
+        value: 24
+      - key: SITE_PASSWORD
+        generateValue: true
+      - key: TYPESAFE_API_KEY
+        sync: false
