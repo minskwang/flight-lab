@@ -1,3 +1,9 @@
+# USB hardware telemetry update (2026-10-28)
+
+Chrome/Edge can connect to ESP32-C3 over Web Serial and read Matrix G4 attitude through MSP. All movement commands remain simulated. Use **ESP32 verbinden**, then **Lage lesen** for a new single measurement. Hardware data stays in the browser unless the user opts in to share recent attitude with OpenAI status queries. See [USB-SETUP.md](USB-SETUP.md).
+
+Validation: six automated tests (`node --test`) and a successful local browser → ESP32 → FC attitude read. Cloud AI hardware-query validation is separate.
+
 # Flight Lab — OpenAI Realtime (current version)
 
 Updated 2026-10-28: the active app uses OpenAI Realtime again. German UI, Chinese/German/English audio, three simulator tools, WebRTC, and cloud password protection are retained. No Jev requests are made. Older Jev files are inactive reference code.

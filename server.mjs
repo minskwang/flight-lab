@@ -60,7 +60,7 @@ export const server = http.createServer(async (req, res) => {
         return reply(res,200,await upstream.text(),'application/sdp');
       } finally { pending = false; }
     }
-    const files = { '/': ['index.html','text/html; charset=utf-8'], '/app.mjs': ['app.mjs','text/javascript; charset=utf-8'], '/simulator.mjs': ['simulator.mjs','text/javascript; charset=utf-8'], '/style.css': ['style.css','text/css; charset=utf-8'] };
+    const files = { '/': ['index.html','text/html; charset=utf-8'], '/app.mjs': ['app.mjs','text/javascript; charset=utf-8'], '/simulator.mjs': ['simulator.mjs','text/javascript; charset=utf-8'], '/serial.mjs': ['serial.mjs','text/javascript; charset=utf-8'], '/hardware-ui.mjs': ['hardware-ui.mjs','text/javascript; charset=utf-8'], '/style.css': ['style.css','text/css; charset=utf-8'] };
     if (req.method === 'GET' && files[url.pathname]) { const [file, type] = files[url.pathname]; return reply(res, 200, await readFile(path.join(root,'public',file),'utf8'), type); }
     reply(res, 404, { error: 'Nicht gefunden' });
   } catch (error) {
