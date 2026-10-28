@@ -3,22 +3,32 @@
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Flight Lab · Drohnensteuerung per Sprache</title><link rel="stylesheet" href="/style.css"></head>
 <body>
 <main>
-  <header><div class="brand">FLIGHT LAB <span> / JUGEND FORSCHT</span></div><span class="tag">Simulation · Keine Drohne verbunden</span></header>
+  <header><div class="brand">FLIGHT LAB <span> / JUGEND FORSCHT</span></div><span class="tag">Flugbefehle: Simulation · USB: nur Lesen</span></header>
   <section class="intro"><p class="eyebrow">SPRACHE → KI → FLUGBEFEHL</p><h1>Sag, wohin.<br><em>Sieh, was ankommt.</em></h1><p>Steuere eine virtuelle Drohne mit deiner Stimme. OpenAI Realtime übersetzt deine Worte in strukturierte Flugbefehle – auf Deutsch, Englisch oder Chinesisch.</p></section>
   <section class="connection card">
     <div class="connection-head"><div><span id="dot" class="dot"></span><strong id="status" role="status">Lokaler Dienst wird geprüft…</strong></div><span id="model" class="muted"></span></div>
-    <p id="notice" aria-live="polite">Nach dem Verbinden wird Audio an OpenAI übertragen. Dabei entstehen API-Kosten. Keine echte Drohne verbunden.</p>
+    <p id="notice" aria-live="polite">Nach dem Verbinden wird Audio an OpenAI übertragen. Dabei entstehen API-Kosten. Flugbefehle steuern nur die Simulation.</p>
     <div class="buttons"><button id="connect" class="primary">Mit OpenAI verbinden</button><button id="disconnect" disabled>Trennen</button><button id="mute" disabled>Mikrofon pausieren</button><button id="demo">Demo ohne KI</button></div>
     <div class="micline"><span>Mikrofon · automatische Spracherkennung DE / EN / ZH</span><span id="micStatus">Inaktiv</span></div>
     <div class="steps"><span id="stepMic">① Mikrofon</span><span id="stepAI">② Realtime</span><span id="stepTool">③ Werkzeugaufruf</span><span id="stepUI">④ Ergebnis</span></div>
     <details id="setup"><summary>Einrichtung · OpenAI API</summary><p>Der Betreiber richtet den OpenAI-Schlüssel auf dem Server ein: lokal mit configure-key.cmd, auf Render als geheime Umgebungsvariable OPENAI_API_KEY. Der Schlüssel gehört niemals ins Frontend oder ins Chat-Protokoll.</p><p>Ein ChatGPT-Abo enthält kein API-Guthaben. Der Website-Zugang verwendet einen separaten Benutzernamen und ein Website-Passwort.</p></details>
+  </section>
+  <section class="card hardware">
+    <div class="section-title"><h2>Echter Flugcontroller · USB</h2><span class="tag small">Nur lesen</span></div>
+    <p>Mac → ESP32-C3 → Matrix G4. USB JTAG/serial debug unit auswählen. Betaflight und andere serielle Monitore vorher trennen.</p>
+    <div class="buttons"><button id="usbConnect" class="primary">ESP32 verbinden</button><button id="usbRead" disabled>Lage lesen</button><button id="usbDisconnect" disabled>USB trennen</button><button id="usbExport">Messdaten exportieren</button></div>
+    <p id="usbStatus" role="status">USB nicht verbunden</p>
+    <div class="telemetry"><div><small>Roll °</small><b id="realRoll">—</b></div><div><small>Pitch °</small><b id="realPitch">—</b></div><div><small>Yaw °</small><b id="realYaw">—</b></div></div>
+    <p id="usbTime" class="muted">Noch keine Messung. Manuelle Einzelmessungen; keine Live-Anzeige.</p>
+    <label><input type="checkbox" id="shareHardware"> Bei KI-Statusabfragen Roll, Pitch, Yaw und Messzeit an OpenAI senden (nur Messungen der letzten 5 Sekunden).</label>
+    <p class="muted">Ohne Freigabe bleiben Messdaten in dieser Seite. Keine Positions-, Höhen- oder Akku-Messung. Vor einer KI-Statusabfrage „Lage lesen“ drücken.</p>
   </section>
   <div class="grid">
     <section class="card"><div class="section-title"><h2>Dein Flugwunsch</h2><span class="tag small">DE / EN / ZH</span></div><p class="muted">Sag zuerst „Starte“. Danach kannst du eine Richtung nennen. OpenAI hört dein Audio direkt. Die Transkription erscheint zum Nachlesen; nach dem Verbinden kannst du auch Text senden.</p><div class="examples"><button data-text="Starte die simulierte Drohne.">Starte</button><button data-text="Flieg ein bisschen nach links vorne.">Nach links vorne</button><button data-text="Flieg ein bisschen nach rechts.">Ein bisschen nach rechts</button><button data-text="Wie ist der Status der Drohne?">Status abfragen</button><button data-text="Lande die simulierte Drohne.">Landen</button></div><div id="transcripts" class="feed" aria-live="polite"><p class="empty">Deine erste Anweisung erscheint hier.</p></div><form id="textForm"><label for="textInput">Oder teste dieselbe KI per Texteingabe</label><div class="input-row"><input id="textInput" placeholder="Zum Beispiel: Flieg ein bisschen nach rechts." maxlength="1000" autocomplete="off"><button id="send" disabled>Senden</button></div></form><p id="activity" class="muted">Noch nicht mit der KI verbunden</p></section>
     <section class="card"><div class="section-title"><h2>Virtuelle Drohne</h2><span id="flightMode" class="tag small">Am Boden</span></div><div class="radar"><div class="cross horizontal"></div><div class="cross vertical"></div><span class="north">VORWÄRTS</span><span class="east">RECHTS</span><span id="drone" aria-label="Virtuelle Drohne">✣</span><span class="radar-note">Schematische Position · Simulation</span></div><div class="telemetry"><div><small>Vor / zurück</small><b id="posForward">0.000</b></div><div><small>Links / rechts</small><b id="posRight">0.000</b></div><div><small>Höhe</small><b id="posVertical">0.000</b></div><div><small>Drehung °</small><b id="posYaw">0.0</b></div></div><p class="muted">Steuerwerte: −1 bis 1 · Dauer: 100–2000 ms. Position in Simulationseinheiten, nicht in Metern. Simulierter Akku: konstant 100 %.</p><button id="stop" class="danger">Not-Stopp · KI trennen</button></section>
   </div>
   <section class="card results"><div class="section-title"><h2>Was die KI ausführt</h2><button id="export">Protokoll exportieren</button></div><p class="muted">move_drone · flight_action · get_drone_status<br>OpenAI ruft Werkzeuge auf. Parameter werden geprüft; Ausführung nur in der Simulation.</p><div id="calls" aria-live="polite"><p class="empty">Hier erscheinen die erkannten Befehle, Parameter und Ausführungsergebnisse.</p></div></section>
-  <footer>Dieser Prototyp prüft Sprache → KI → strukturierte Befehle. ESP32 und Flugcontroller sind noch nicht angeschlossen. Eine erfolgreiche Simulation bestätigt keine sichere reale Flugsteuerung.<br>Das Protokoll bleibt in dieser Seite. Ein Export enthält Transkripte und Ergebnisse, aber keinen API-Schlüssel.</footer>
+  <footer>Dieser Prototyp prüft Sprache → KI → strukturierte Befehle. ESP32 kann echte Lage-Daten liefern; Motoren werden nicht angesteuert. Eine erfolgreiche Simulation bestätigt keine sichere reale Flugsteuerung.<br>Das Protokoll bleibt in dieser Seite. Ein Export enthält Transkripte und Ergebnisse, aber keinen API-Schlüssel.</footer>
 </main><script type="module" src="/app.mjs"></script>
 </body></html>
 

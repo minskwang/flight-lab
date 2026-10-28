@@ -1,6 +1,13 @@
+import { initHardware } from './hardware-ui.mjs';
 import { createSimulator, processResponse } from './simulator.mjs';
 const $ = id => document.getElementById(id);
 const simulator = createSimulator();
+const hardware = initHardware();
+const executor = { execute(name,args) {
+  const result = simulator.execute(name,args);
+  if (name === 'get_drone_status' && result.ok) result.hardware = hardware.status();
+  return result;
+} };
 let pc, dc, stream, connecting = false, busy = false, generation = 0, aborter, timer;
 let records = [], history = [], sessionNumber = 0, seen = new Set();
 const modes = { grounded: 'Am Boden', airborne: 'In der Luft · Simulation', emergency_stopped: 'Not-Stopp aktiv' };
@@ -70,7 +77,7 @@ function onEvent(event) {
   if(event.type === 'response.done') {
     busy=false;
     for(const item of event.response?.output || []) for(const c of item.content || []) if(c.text || c.transcript) addTranscript('KI',c.text || c.transcript);
-    processResponse(event,simulator,seen,send,record);
+    processResponse(event,executor,seen,send,record);
     $('activity').textContent=event.response?.status === 'completed' ? 'Fertig. Du kannst weitersprechen.' : 'Antwort nicht abgeschlossen.';
     if(event.response?.status === 'failed') notice('OpenAI-Antwort fehlgeschlagen. Guthaben und Modellzugriff prüfen.');
     updateButtons();
